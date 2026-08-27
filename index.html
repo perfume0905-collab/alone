@@ -1,1 +1,215 @@
-<!-- repository initialization; replaced by the uploaded HTML in the next commit -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>서울시교육청 공사계약 AI 챗봇 | Gemini + 실제 근거표기</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --panel:#ffffff; --line:#dbe3ef; --ink:#14213d; --muted:#66758c;
+    --navy:#163a70; --blue:#2e6ac7; --sky:#eaf2ff; --green:#157a58; --greenbg:#eaf8f2;
+    --amber:#9a6200; --amberbg:#fff7e6; --red:#b42318; --shadow:0 12px 34px rgba(30,55,90,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans KR",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .app{height:100%;display:grid;grid-template-rows:auto 1fr}
+  .topbar{background:linear-gradient(120deg,#123463,#1f5593);color:white;padding:15px 22px;display:flex;gap:16px;align-items:center;justify-content:space-between;box-shadow:0 3px 16px rgba(15,40,80,.22);z-index:5}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .logo{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.16);display:grid;place-items:center;border:1px solid rgba(255,255,255,.25);font-weight:800}
+  .brand h1{font-size:19px;margin:0;letter-spacing:-.4px}
+  .brand p{font-size:12px;margin:4px 0 0;color:#d9e8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .status-pill{font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:7px 10px;border-radius:999px;white-space:nowrap}
+  .icon-btn{border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.12);color:white;border-radius:10px;padding:8px 11px}
+  .workspace{min-height:0;display:grid;grid-template-columns:300px 1fr}
+  .sidebar{border-right:1px solid var(--line);background:#f9fbfe;padding:17px;overflow:auto}
+  .side-title{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.4px;margin:4px 0 9px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:0 4px 14px rgba(50,75,110,.05);margin-bottom:13px}
+  .doc-item{display:flex;gap:9px;align-items:flex-start;margin:9px 0}
+  .doc-dot{width:9px;height:9px;border-radius:50%;background:var(--blue);margin-top:5px;flex:0 0 auto}
+  .doc-item b{font-size:13px;display:block;line-height:1.35}
+  .doc-item span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+  .quick{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid #cddaf0;background:#fff;color:#294e7f;border-radius:999px;padding:7px 9px;font-size:12px;text-align:left}
+  .chip:hover{background:var(--sky)}
+  .notice{font-size:11px;line-height:1.55;color:#6b7280;background:#fff8e8;border:1px solid #f1deb3;border-radius:12px;padding:11px}
+  .main{min-width:0;min-height:0;display:grid;grid-template-rows:1fr auto;position:relative}
+  .chat{overflow:auto;padding:26px clamp(16px,4vw,56px) 30px;scroll-behavior:smooth}
+  .chat-inner{max-width:980px;margin:0 auto}
+  .welcome{background:linear-gradient(135deg,#fff,#f7fbff);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow);margin-bottom:22px}
+  .welcome h2{margin:0 0 8px;font-size:22px;letter-spacing:-.5px}
+  .welcome p{margin:0;color:var(--muted);line-height:1.65;font-size:14px}
+  .message{display:flex;margin:18px 0;gap:11px;align-items:flex-start}
+  .message.user{justify-content:flex-end}
+  .avatar{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
+  .assistant .avatar{background:#e8f0ff;color:#1e4d8f}
+  .user .avatar{background:#1f5593;color:white;order:2}
+  .bubble{max-width:min(820px,88%);border-radius:17px;padding:14px 16px;line-height:1.65;font-size:14px;box-shadow:0 3px 12px rgba(45,65,95,.06)}
+  .assistant .bubble{background:white;border:1px solid var(--line)}
+  .user .bubble{background:#1f5593;color:white;border:1px solid #1f5593}
+  .bubble h2,.bubble h3,.bubble h4{margin:14px 0 7px;line-height:1.35}
+  .bubble h2:first-child,.bubble h3:first-child{margin-top:0}
+  .bubble h2{font-size:17px}.bubble h3{font-size:15px;color:#1e477b}.user .bubble h3{color:white}
+  .bubble ul,.bubble ol{padding-left:21px;margin:8px 0}.bubble li{margin:4px 0}
+  .bubble p{margin:7px 0}
+  .bubble strong{font-weight:800}
+  .bubble code{background:#eef3f9;padding:2px 5px;border-radius:5px;font-size:12px}.user .bubble code{background:rgba(255,255,255,.15)}
+  .bubble table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12.5px}
+  .bubble th,.bubble td{border:1px solid #d8e1ee;padding:8px;vertical-align:top;text-align:left}
+  .bubble th{background:#f1f6fc;color:#214b7d}
+  .cite{display:inline-block;background:#eef5ff;color:#245da7;border:1px solid #cadcf7;border-radius:7px;padding:0 5px;font-size:11px;font-weight:800;white-space:nowrap}
+  .msg-tools{display:flex;gap:7px;margin-top:10px}
+  .mini-btn{border:1px solid #d5dfec;background:#fff;color:#52647a;border-radius:8px;padding:5px 8px;font-size:11px}
+  .sources{margin-top:12px;border-top:1px dashed #d6dfeb;padding-top:12px}
+  .source-toggle{border:0;background:transparent;color:#265b9d;font-weight:800;padding:0;font-size:12px}
+  .source-list{display:none;margin-top:10px;gap:8px}
+  .source-list.open{display:grid}
+  .source-card{border:1px solid #dbe4f0;border-radius:11px;background:#fbfdff;padding:10px}
+  .source-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .source-id{font-size:11px;font-weight:900;background:#dceaff;color:#1e5393;border-radius:7px;padding:3px 6px;flex:0 0 auto}
+  .source-meta{font-size:11px;color:#566a82;line-height:1.45;flex:1}
+  .source-text{font-size:11.5px;color:#35445a;margin-top:7px;white-space:pre-wrap;max-height:150px;overflow:auto;line-height:1.55;background:white;border-radius:8px;padding:8px;border:1px solid #edf1f6}
+  .composer-wrap{border-top:1px solid var(--line);background:rgba(250,252,255,.96);padding:13px 18px 16px;backdrop-filter:blur(8px)}
+  .composer{max-width:980px;margin:0 auto;background:white;border:1px solid #cfd9e7;border-radius:17px;display:grid;grid-template-columns:1fr auto;align-items:end;box-shadow:0 7px 22px rgba(35,60,95,.10);overflow:hidden}
+  textarea{border:0;outline:0;resize:none;min-height:52px;max-height:180px;padding:15px 16px;background:transparent;line-height:1.45}
+  .send{margin:8px;border:0;border-radius:12px;background:#1f5593;color:white;font-weight:800;padding:11px 17px;min-width:76px}
+  .send:disabled{opacity:.55;cursor:not-allowed}
+  .composer-note{max-width:980px;margin:7px auto 0;font-size:10.5px;color:#7b8797;text-align:center}
+  .settings-backdrop{position:fixed;inset:0;background:rgba(8,22,42,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+  .settings-backdrop.open{display:flex}
+  .settings{width:min(580px,100%);background:white;border-radius:20px;box-shadow:0 25px 70px rgba(0,0,0,.25);overflow:hidden}
+  .settings-head{padding:18px 20px;background:#f5f8fc;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .settings-head h3{margin:0;font-size:17px}
+  .close{border:0;background:transparent;font-size:22px;color:#52647a}
+  .settings-body{padding:20px}
+  .field{margin-bottom:15px}.field label{display:block;font-size:12px;font-weight:800;color:#40546d;margin-bottom:6px}
+  .field input,.field select{width:100%;border:1px solid #cfd9e7;border-radius:10px;padding:10px 11px;outline:none;background:white}
+  .keyrow{display:grid;grid-template-columns:1fr auto;gap:7px}.keyrow button{border:1px solid #d4deeb;background:#f6f9fc;border-radius:10px;padding:0 11px}
+  .range-row{display:grid;grid-template-columns:1fr 70px;gap:10px;align-items:center}.range-row input[type=range]{padding:0;border:0}.range-val{text-align:center;background:#f3f7fc;padding:7px;border-radius:8px;font-size:12px}
+  .setting-note{font-size:11px;line-height:1.55;color:#707d8e;background:#fff9ec;border:1px solid #f0dfb8;padding:10px;border-radius:10px}
+  .settings-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+  .btn-secondary,.btn-primary{border-radius:10px;padding:9px 13px;font-weight:800}.btn-secondary{background:white;border:1px solid #ced9e7;color:#405875}.btn-primary{background:#1f5593;border:1px solid #1f5593;color:white}
+  .typing{display:flex;gap:5px;align-items:center;height:22px}.typing i{width:7px;height:7px;border-radius:50%;background:#6b85a8;animation:bounce 1s infinite ease-in-out}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes bounce{0%,70%,100%{transform:translateY(0);opacity:.45}35%{transform:translateY(-5px);opacity:1}}
+  .error{color:var(--red);background:#fff1f0;border:1px solid #f4c7c3;border-radius:10px;padding:10px;font-size:12px;line-height:1.55}
+  .retrieval-badge{display:inline-flex;align-items:center;gap:5px;background:var(--greenbg);color:var(--green);border:1px solid #bee8d8;border-radius:999px;padding:4px 8px;font-size:10.5px;font-weight:800;margin-bottom:7px}
+  @media(max-width:850px){.workspace{grid-template-columns:1fr}.sidebar{display:none}.status-pill{display:none}.brand p{display:none}.chat{padding:18px 12px 24px}.bubble{max-width:93%}.topbar{padding:12px 14px}.welcome{padding:18px}.welcome h2{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">공사</div>
+      <div><h1>서울시교육청 공사계약 AI 챗봇</h1><p>첨부자료 내장 · Gemini 답변 생성 · 실제 문서명·조항·페이지 자동 표기</p></div>
+    </div>
+    <div class="top-actions">
+      <span class="status-pill" id="dataStatus">자료 읽는 중…</span>
+      <button class="icon-btn" id="settingsBtn" aria-label="API 설정">⚙ API 설정</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="sidebar">
+      <div class="side-title">내장 자료</div>
+      <div class="card" id="docSummary"></div>
+
+      <div class="side-title">빠른 질문</div>
+      <div class="card"><div class="quick">
+        <button class="chip">1인 수의계약 기준은?</button>
+        <button class="chip">2인 수의계약 낙찰하한율은?</button>
+        <button class="chip">선금 지급·정산은 어떻게 하나요?</button>
+        <button class="chip">설계변경 시 계약금액 조정 기준은?</button>
+        <button class="chip">준공 시 필요한 서류는?</button>
+        <button class="chip">현장대리인 관련 기준은?</button>
+        <button class="chip">감사에서 자주 지적되는 사례는?</button>
+      </div></div>
+
+      <div class="notice">
+        <b>답변 원칙</b><br>
+        AI에는 검색된 첨부자료 원문만 전달합니다. 정확한 법령 조항번호가 검색 근거에 없으면 임의로 만들지 않고 “첨부자료에서 확인되지 않음”으로 답하도록 설정했습니다.
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="chat" id="chat">
+        <div class="chat-inner" id="chatInner">
+          <div class="welcome">
+            <h2>공사계약 실무를 질문하세요.</h2>
+            <p>질문과 관련된 <b>2025년 공사계약 Q&A 및 사례연습</b>과 <b>서울특별시교육청 계약업무 처리지침</b>의 원문을 먼저 검색한 뒤, Gemini가 그 자료만 바탕으로 답변합니다.</p>
+          </div>
+        </div>
+      </section>
+      <div class="composer-wrap">
+        <div class="composer">
+          <textarea id="question" rows="1" placeholder="예: 추정가격 3천만원인 건축공사는 1인 수의계약이 가능한가요?"></textarea>
+          <button class="send" id="sendBtn">질문</button>
+        </div>
+        <div class="composer-note">Enter로 전송 · Shift+Enter 줄바꿈 · API Key는 HTML에 저장되지 않으며 선택 시 세션에만 보관</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="settings-backdrop" id="settingsBackdrop">
+  <div class="settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-head"><h3 id="settingsTitle">Gemini API 설정</h3><button class="close" id="closeSettings">×</button></div>
+    <div class="settings-body">
+      <div class="field">
+        <label for="apiKey">Gemini API Key</label>
+        <div class="keyrow"><input type="password" id="apiKey" placeholder="AIza..." autocomplete="off"><button id="toggleKey" type="button">보기</button></div>
+      </div>
+      <div class="field">
+        <label for="model">모델</label>
+        <input id="model" value="gemini-3.6-flash" placeholder="예: gemini-3.6-flash">
+      </div>
+      <div class="field">
+        <label for="topK">AI에 전달할 근거 개수</label>
+        <div class="range-row"><input type="range" id="topK" min="4" max="12" value="8"><span class="range-val" id="topKValue">8개</span></div>
+      </div>
+      <div class="field">
+        <label for="docFilter">검색 범위</label>
+        <select id="docFilter"><option value="all">전체 자료</option><option value="qa">공사계약 Q&A 및 사례연습만</option><option value="guide">계약업무 처리지침만</option></select>
+      </div>
+      <div class="field" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="rememberKey" style="width:auto"><label for="rememberKey" style="margin:0;font-weight:600">이 브라우저 탭을 닫을 때까지 API Key 기억</label></div>
+      <div class="setting-note">이 HTML은 브라우저에서 Gemini API를 직접 호출합니다. 개인용·내부 테스트에는 편리하지만, 웹에 공개 배포하면 API Key가 브라우저에 노출될 수 있습니다. 공개 서비스라면 백엔드 프록시를 두는 방식이 안전합니다.</div>
+    </div>
+    <div class="settings-foot"><button class="btn-secondary" id="testApi">연결 확인</button><button class="btn-primary" id="saveSettings">저장</button></div>
+  </div>
+</div>
+
+<script>window.__KB_B64=[];</script>
+<script src="kb/data-01.js"></script>
+<script src="kb/data-02.js"></script>
+<script src="kb/data-03.js"></script>
+<script src="kb/data-04.js"></script>
+<script src="kb/data-05.js"></script>
+<script src="kb/data-06.js"></script>
+<script src="kb/data-07.js"></script>
+<script src="kb/data-08.js"></script>
+<script src="kb/data-09.js"></script>
+<script src="kb/data-10.js"></script>
+<script src="kb/data-11.js"></script>
+<script src="kb/data-12.js"></script>
+<script src="kb/data-13.js"></script>
+<script src="kb/data-14.js"></script>
+<script id="kb-data" type="application/json"></script>
+<script>
+(async()=>{
+  try{
+    const b64=window.__KB_B64.join("");
+    const raw=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+    const stream=new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"));
+    document.getElementById("kb-data").textContent=await new Response(stream).text();
+    window.__KB_B64=null;
+    window.dispatchEvent(new Event("kb-ready"));
+  }catch(e){
+    console.error(e);
+    const st=document.getElementById("dataStatus");if(st)st.textContent="자료 로드 오류";
+  }
+})();
+</script>
+<script src="app.js"></script>
+</body>
+</html>
